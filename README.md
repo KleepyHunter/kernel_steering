@@ -1,4 +1,4 @@
-# Kernel Activation Steering (KAS): experiment code for jailbreaking and CAA-defined tasks.
+# Kernelized Activation Steering (KAS): experiment code for jailbreaking and CAA-defined tasks.
 
 **Content warning**: This repository contains text that is offensive, harmful, or otherwise inappropriate in nature.
 
@@ -311,13 +311,18 @@ hyperparameters (see `Config.artifact_path`), for example:
   script, unchanged. Manifests are checked against their `.sha256` file and the current data
   splits.
 
-## Citing refusal_direction
+## Citation
 
-```tex
-@article{arditi2024refusal,
-  title={Refusal in Language Models Is Mediated by a Single Direction},
-  author={Andy Arditi and Oscar Obeso and Aaquib Syed and Daniel Paleka and Nina Panickssery and Wes Gurnee and Neel Nanda},
-  journal={arXiv preprint arXiv:2406.11717},
-  year={2024}
+If you use this code, please cite our paper ([arXiv:2610.01062](https://arxiv.org/abs/2610.01062)):
+
+```bibtex
+@misc{abdullaev2026kernelizedactivationsteering,
+      title={Kernelized Activation Steering},
+      author={Laziz U. Abdullaev and Minh-Hieu Pham and Bach Do and Khoat Than and Tan M. Nguyen},
+      year={2026},
+      eprint={2610.01062},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/2610.01062},
 }
 ```
