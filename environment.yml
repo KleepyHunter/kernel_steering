@@ -1,0 +1,17 @@
+# Run from the repository root:
+#   conda env create -f environment.yml
+#   conda activate refusal_direction
+#   pip install --no-deps -r constraints.txt
+#
+# One environment runs the pipeline and TinyBenchmarks. The env name matches
+# PIPELINE_CONDA_ENV in scripts/sweeps/*.sh. The last step adds vLLM and the rest of the
+# current environment; it needs --no-deps (see requirements.txt), which conda's pip section
+# cannot pass.
+name: refusal_direction
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pip
+  - pip:
+      - -r requirements.txt

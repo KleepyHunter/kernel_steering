@@ -1,0 +1,61 @@
+# Direct dependencies of the pipeline and of TinyBenchmarks, at the versions of the current
+# working environment. One environment runs both.
+#
+# Environment constraints:
+# - Python 3.11 exactly (pandas 2.0.3 has no wheels for 3.12+; scikit-learn 1.8.0 needs >= 3.11).
+# - Linux x86_64 with an NVIDIA driver for CUDA 12.8 (the PyPI torch 2.10.0 wheel is cu128).
+# - Every other package is pinned by constraints.txt, the current environment's freeze.
+# - Install from the repository root (the lm_eval path below is relative to it), in this order:
+#     pip install -r requirements.txt
+#     pip install --no-deps -r constraints.txt
+#   The second step adds vLLM and the rest of the current environment at their exact versions.
+#   It needs --no-deps because vLLM 0.18 declares opencv-python-headless>=4.13 (numpy >= 2),
+#   while the current environment runs numpy 1.26.4 without opencv (used only for images).
+#   conda env create -f environment.yml runs the first step.
+
+-c constraints.txt
+
+# Models, steering, and evaluation
+torch==2.10.0
+transformers==4.57.6
+accelerate==1.13.0  # the TinyBenchmarks environment's version (the pipeline env has 0.31.0, too old for peft 0.18.1)
+datasets==4.8.4
+zstandard==0.22.0  # reads the Pile's .jsonl.zst shards (perplexity stage)
+sentencepiece==0.2.0
+
+# LlamaGuard-3 judge client (vLLM itself comes from constraints.txt, see above)
+openai==2.24.0
+litellm==1.53.1  # the current environment has 1.40.9, which is no longer on PyPI
+
+# SAS (Gemma Scope sparse autoencoders)
+sae-lens==6.39.0
+transformer-lens==2.18.0
+
+# Curveball / CHaRS / utilities
+scikit-learn==1.8.0
+threadpoolctl==3.6.0
+numpy==1.26.4
+jaxtyping==0.3.9
+einops==0.8.0
+tqdm==4.66.4
+matplotlib==3.9.0
+pandas==2.0.3
+
+# TinyBenchmarks: lm_eval 0.4.9.2 from the copy in this repository (with the steering
+# changes), the hf backend, and the tinyBenchmarks scorer, at the TinyBenchmarks
+# environment's versions (lm-evaluation-harness/requirements-steering-lm-eval.txt).
+# Packages shared with the pipeline use the pipeline versions above.
+-e ./lm-evaluation-harness
+peft==0.18.1
+evaluate==0.4.6
+jsonlines==4.0.0
+pytablewriter==1.2.1
+rouge_score==0.1.2
+sacrebleu==2.6.0
+sqlitedict==2.1.0
+word2number==1.1
+more-itertools==11.0.2
+tinyBenchmarks @ git+https://github.com/felipemaiapolo/tinyBenchmarks@9c7e20302301ad531bfdfd9a7288e6e916bf22e9
+
+# Tests (not in the current environment)
+pytest
