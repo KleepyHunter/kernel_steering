@@ -360,7 +360,34 @@ def compute_median_heuristic_sigma(source, target):
     else:
         # Fallback to sqrt(d_model) if all distances are zero
         sigma_eff = float(source.shape[1] ** 0.5)
-    
+
+    kernel_params = {"sigma": sigma_eff}
+    return kernel_params
+
+def compute_median_heuristic_sigma_l1(source, target):
+    """
+    Laplacian counterpart of compute_median_heuristic_sigma: sigma is the median of the
+    non-zero pairwise L1 distances on combined source and target activations.
+
+    Args:
+        source: Source activations [n_A, d_model]
+        target: Target activations [n_B, d_model]
+
+    Returns:
+        dict: Kernel parameters with computed sigma
+    """
+    A_B_combined = torch.cat([source, target], dim=0)
+    cdist_input = A_B_combined.float() if A_B_combined.dtype in (torch.float16, torch.bfloat16) else A_B_combined
+    dists_l1 = torch.cdist(cdist_input, cdist_input, p=1)
+
+    # Get median of non-zero distances
+    positive_dists = dists_l1[dists_l1 > 0]
+    if positive_dists.numel() > 0:
+        sigma_eff = torch.median(positive_dists).item()
+    else:
+        # Fallback to d_model if all distances are zero
+        sigma_eff = float(source.shape[1])
+
     kernel_params = {"sigma": sigma_eff}
     return kernel_params
 
@@ -403,6 +430,15 @@ def get_kernelized_steering_hooks(
             computed_params = compute_median_heuristic_sigma(A, B)
             kernel_params.update(computed_params)
             print(f"Auto-computed sigma via median heuristic: {kernel_params['sigma']:.4f}")
+    elif kernel_type == "laplacian":
+        # Same heuristic with L1 distances; the hook's default sigma of 1.0 makes every
+        # kernel value underflow to zero on LLM activations (no steering at all).
+        if kernel_params is None:
+            kernel_params = {}
+        if "sigma" not in kernel_params:
+            computed_params = compute_median_heuristic_sigma_l1(A, B)
+            kernel_params.update(computed_params)
+            print(f"Auto-computed sigma via median heuristic (laplacian): {kernel_params['sigma']:.4f}")
 
     
     hook_fn = get_kernelized_steering_input_pre_hook(

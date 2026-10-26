@@ -28,6 +28,7 @@ from pipeline.utils.hook_utils import (
     get_curveball_kpca_output_hook,
     get_kernelized_steering_hooks,
     get_kernelized_steering_input_pre_hook,
+    compute_median_heuristic_sigma_l1,
 )
 from pipeline.utils.sas import (
     build_sas_steer_config,
@@ -267,8 +268,11 @@ def generate_steer_config(cfg, num_layers, source, target, kernel_type, kernel_p
                 "prompt_only": prompt_only,
             },
         }
-        # kernel config
-        kernel_params = compute_median_heuristic_sigma(source, target)
+        # kernel config (same bandwidth heuristic as get_kernelized_steering_hooks)
+        if kernel_type == "laplacian":
+            kernel_params = compute_median_heuristic_sigma_l1(source, target)
+        else:
+            kernel_params = compute_median_heuristic_sigma(source, target)
         steer_config_kernel = {
             f"layers.{layer}": {
                 "source": source,
