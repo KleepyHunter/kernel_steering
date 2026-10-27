@@ -7,7 +7,11 @@ pytest.importorskip("matplotlib")
 pytest.importorskip("jaxtyping")
 
 from pipeline import references
-from pipeline.utils.hook_utils import get_kernelized_steering_input_pre_hook
+from pipeline.utils.hook_utils import (
+    compute_median_heuristic_sigma_l1,
+    get_kernelized_steering_hooks,
+    get_kernelized_steering_input_pre_hook,
+)
 
 
 @pytest.mark.parametrize("kernel_type, kernel_params", [
@@ -27,6 +31,20 @@ def test_kas_hook_accepts_float64_references(kernel_type, kernel_params):
     assert steered.dtype == torch.bfloat16
     assert steered.shape == activation.shape
     assert torch.isfinite(steered.float()).all()
+
+
+def test_laplacian_hooks_pick_l1_median_sigma():
+    # LLM-scale activations: L1 distances in the hundreds, so sigma=1 would zero every kernel value.
+    torch.manual_seed(0)
+    source, target = 3 * torch.randn(6, 512), 3 * torch.randn(6, 512) + 1
+    combined = torch.cat([source, target])
+    dists = torch.cdist(combined, combined, p=1)
+    assert compute_median_heuristic_sigma_l1(source, target)["sigma"] == pytest.approx(dists[dists > 0].median().item())
+
+    model_base = SimpleNamespace(model_block_modules=[None])
+    (_, hook), = get_kernelized_steering_hooks(model_base, 0, source, target, kernel_type="laplacian", eta=2.0)[0]
+    activation = 3 * torch.randn(1, 3, 512)
+    assert not torch.equal(hook(None, (activation,))[0], activation)
 
 
 def _patch_refusal_data(monkeypatch, pool, refusing):
