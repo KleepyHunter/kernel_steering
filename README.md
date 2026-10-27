@@ -13,9 +13,6 @@ The experiments are in two folders, each with its own environment and README:
 | [`Jailbreaking_CAA/`](Jailbreaking_CAA) | jailbreaking on JailbreakBench, CAA-style multiple-choice steering, and the KAS ablations, on Gemma-2-9B-IT, Llama-3.1-8B-Instruct and Qwen2.5-7B-Instruct |
 | [`Image/`](Image) | image-generation style control on FLUX.1-schnell, compared with Mean-AcT |
 
-[VALIDATION_SELECTION.md](VALIDATION_SELECTION.md) describes how layers and strengths are selected
-on validation splits for the jailbreaking and CAA results.
-
 ```bash
 git clone https://github.com/KleepyHunter/kernel_steering.git
 cd kernel_steering/Jailbreaking_CAA   # or: cd kernel_steering/Image
